@@ -13,7 +13,7 @@ PACKAGE_ROOT = Path(__file__).resolve().parent
 TEMP_FOLDER = PACKAGE_ROOT.parent / "temp"
 DATA_FOLDER = PACKAGE_ROOT.parent / "data"
 
-API_KEY = "llx-p3W98EqNfdCJBe7eCC8jYpueztFTWGpiVmOzUbcgC8oiPqcE"
+API_KEY = "llx-..."
 
 
 #set async communication to retreive data from API
