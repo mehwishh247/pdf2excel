@@ -5,18 +5,14 @@ import tkinter as tk
 from tkinter import filedialog
 from llama_cloud_services import LlamaParse
 from llama_index.core import SimpleDirectoryReader
-import json
-import pandas as pd
 import nest_asyncio
-
 import requests
-import wget
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 TEMP_FOLDER = PACKAGE_ROOT.parent / "temp"
 DATA_FOLDER = PACKAGE_ROOT.parent / "data"
 
-API_KEY = "llx-p3W98EqNfdCJBe7eCC8jYpueztFTWGpiVmOzUbcgC8oiPqcE"
+API_KEY = "llx-..."
 
 HEADER = {
     'accept': 'application/json',
@@ -24,8 +20,6 @@ HEADER = {
     'Authorization': 'Bearer ' + API_KEY,
 }
 
-
-#set async communication to retreive data from API
 nest_asyncio.apply()
 
 
