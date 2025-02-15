@@ -9,11 +9,20 @@ import json
 import pandas as pd
 import nest_asyncio
 
+import requests
+import wget
+
 PACKAGE_ROOT = Path(__file__).resolve().parent
 TEMP_FOLDER = PACKAGE_ROOT.parent / "temp"
 DATA_FOLDER = PACKAGE_ROOT.parent / "data"
 
-API_KEY = "llx-..."
+API_KEY = "llx-p3W98EqNfdCJBe7eCC8jYpueztFTWGpiVmOzUbcgC8oiPqcE"
+
+HEADER = {
+    'accept': 'application/json',
+    'Content-Type': 'multipart/form-data',
+    'Authorization': 'Bearer ' + API_KEY,
+}
 
 
 #set async communication to retreive data from API
@@ -39,7 +48,6 @@ def set_parser():
 
     parser = LlamaParse(
         api_key=API_KEY,
-        premium_mode=True,
         result_type="markdown",  
         content_guideline_instruction=
         """
@@ -52,9 +60,9 @@ def set_parser():
         Extract only the table from the files.
         If a column does not have a name, name it as a single space ' '. Do not remove the column.
         Do not mixup columns or make extra columns. Read writing and names properly
-        Save each table as a seperate JSON looking format unless two tables are in exact same format (same column titles and handwriting).
-        Maintain actuall table format
-        Save each json in a list
+        extract each table into a seperate JSON looking format unless two tables are in exact same format (same column titles and handwriting).
+        Maintain actual table format
+        Save all JSONs in a dictionary
         if a page has two tables with different formats, save them separately.
         Final json must have all tables of PDF. 
         The final result should be one dictionary/json containing all tables, each table named as table_1, table_2, ...
@@ -81,12 +89,20 @@ def parse_files(parser: LlamaParse, file_path: str):
     shutil.copy(file_path, TEMP_FOLDER / file_name)
 
     file_extractor = {".pdf": parser}
-    table_list = SimpleDirectoryReader(
-    input_dir=TEMP_FOLDER, file_extractor=file_extractor).load_data()
+    table_list = SimpleDirectoryReader(input_dir=TEMP_FOLDER, file_extractor=file_extractor).load_data()
 
-    table_list = table_list[0].text
+    print("File parsed, downloading data...")
+    job_id = table_list[0].id_
+    url = f'https://api.cloud.llamaindex.ai/api/parsing/job/{job_id}/result/xlsx'
 
-    return json.loads(table_list)
+    try:
+        response = requests.get(url=url, headers=HEADER)
+
+    except:
+        print("Could not download file, try again later")
+        return
+        
+    return response
 
 def remove_cache():
     try:
@@ -106,13 +122,15 @@ def pdf2excel():
     Each page of PDF file is stored in a separate sheet in the excel file
     '''
     file_path = select_pdf_file()
-    parser = set_parser()
-    tables = parse_files(parser=parser, file_path=file_path)
+    file_name = Path(file_path).name.split('.')[0]
 
-    with pd.ExcelWriter(DATA_FOLDER / 'tables.xlsx', engine="xlsxwriter") as writer:
-        for sheet_name, table in tables.items():
-            df = pd.DataFrame(table)
-            df.to_excel(writer, sheet_name=sheet_name, index=False, header=True)
+    parser = set_parser()
+    response = parse_files(parser=parser, file_path=file_path)
+
+    if response:
+        with open(DATA_FOLDER / f'{file_name}.xlsx', 'wb') as output:
+            output.write(response.content)
+            print(f"Saved file as {file_name}.xlsx in data folder")
 
     remove_cache()
 
