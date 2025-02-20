@@ -7,6 +7,8 @@ from llama_cloud_services import LlamaParse
 from llama_index.core import SimpleDirectoryReader
 import nest_asyncio
 import requests
+import io
+import sys
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 TEMP_FOLDER = PACKAGE_ROOT.parent / "temp"
@@ -42,8 +44,9 @@ def set_parser():
 
     parser = LlamaParse(
         api_key=API_KEY,
+        premium_mode=True,
         result_type="markdown",  
-        content_guideline_instruction=
+        complemental_formatting_instruction=
         """
         These are handwritten files.
         These files contain tables.
@@ -83,10 +86,21 @@ def parse_files(parser: LlamaParse, file_path: str):
     shutil.copy(file_path, TEMP_FOLDER / file_name)
 
     file_extractor = {".pdf": parser}
-    table_list = SimpleDirectoryReader(input_dir=TEMP_FOLDER, file_extractor=file_extractor).load_data()
+    
+    captured_output = io.StringIO()
+    sys.stdout = captured_output  # Redirect stdout
 
+    try:
+        SimpleDirectoryReader(input_dir=TEMP_FOLDER, file_extractor=file_extractor).load_data()
+         # Call test function
+    finally:
+        sys.stdout = sys.__stdout__  # Restore original stdout
+
+    # Retrieve and process output
     print("File parsed, downloading data...")
-    job_id = table_list[0].id_
+    output = captured_output.getvalue()
+    job_id = output.split(' ')[-1].strip()
+
     url = f'https://api.cloud.llamaindex.ai/api/parsing/job/{job_id}/result/xlsx'
 
     try:
