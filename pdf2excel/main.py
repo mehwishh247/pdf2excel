@@ -44,9 +44,9 @@ def set_parser():
 
     parser = LlamaParse(
         api_key=API_KEY,
-        premium_mode=True,
-        result_type="markdown",  
-        complemental_formatting_instruction=
+        result_type="markdown",
+        premium_mode=True,  
+        content_guideline_instruction=
         """
         These are handwritten files.
         These files contain tables.
@@ -57,12 +57,12 @@ def set_parser():
         Extract only the table from the files.
         If a column does not have a name, name it as a single space ' '. Do not remove the column.
         Do not mixup columns or make extra columns. Read writing and names properly
-        extract each table into a seperate JSON looking format unless two tables are in exact same format (same column titles and handwriting).
+        Each page may have two table in exact same format. Extract them in a single sheet. Second table is just remaining rows of first table on the same page.
+        Each page has a date and title on top of it, do not extract it as a separate table in a separate sheet. It should be in a single sheet.
+        Extract each table into a seperate JSON looking format unless two tables are in exact same format (same column titles and handwriting).
         Maintain actual table format
-        Save all JSONs in a dictionary
-        if a page has two tables with different formats, save them separately.
         Final json must have all tables of PDF. 
-        The final result should be one dictionary/json containing all tables, each table named as table_1, table_2, ...
+        The final result should be a spreadsheet, each sheet corresponding to a single page
         """
     )
 
@@ -95,11 +95,11 @@ def parse_files(parser: LlamaParse, file_path: str):
          # Call test function
     finally:
         sys.stdout = sys.__stdout__  # Restore original stdout
-
-    # Retrieve and process output
-    print("File parsed, downloading data...")
+        print("File parsed, downloading data...")  # Retrieve and process output
+    
     output = captured_output.getvalue()
-    job_id = output.split(' ')[-1].strip()
+    job_id = output.split('\n')[0]
+    job_id = job_id.split(' ')[-1].strip()
 
     url = f'https://api.cloud.llamaindex.ai/api/parsing/job/{job_id}/result/xlsx'
 
