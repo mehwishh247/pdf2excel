@@ -14,7 +14,7 @@ PACKAGE_ROOT = Path(__file__).resolve().parent
 TEMP_FOLDER = PACKAGE_ROOT.parent / "temp"
 DATA_FOLDER = PACKAGE_ROOT.parent / "data"
 
-API_KEY = "llx-..."
+API_KEY = "llx-p3W98EqNfdCJBe7eCC8jYpueztFTWGpiVmOzUbcgC8oiPqcE"
 
 HEADER = {
     'accept': 'application/json',
@@ -46,23 +46,21 @@ def set_parser():
         api_key=API_KEY,
         result_type="markdown",
         premium_mode=True,  
-        content_guideline_instruction=
+        user_prompt=
         """
         These are handwritten files.
         These files contain tables.
         Tables are also handwritten. Some fully, some partially.
-        Sometimes, the writting would be cursive so you must be extra carefull with those.
+        Sometimes, the writing would be cursive so you must be extra careful with those.
         Each file may contain a totally different handwriting so be careful about that too.
         These tables can have different structure from each other.
         Extract only the table from the files.
         If a column does not have a name, name it as a single space ' '. Do not remove the column.
-        Do not mixup columns or make extra columns. Read writing and names properly
+        Do not mix up columns or make extra columns. Read writing and names properly
         Each page may have two table in exact same format. Extract them in a single sheet. Second table is just remaining rows of first table on the same page.
         Each page has a date and title on top of it, do not extract it as a separate table in a separate sheet. It should be in a single sheet.
-        Extract each table into a seperate JSON looking format unless two tables are in exact same format (same column titles and handwriting).
-        Maintain actual table format
-        Final json must have all tables of PDF. 
-        The final result should be a spreadsheet, each sheet corresponding to a single page
+        Maintain actual table format.
+        Final result must have all tables of PDF. 
         """
     )
 
